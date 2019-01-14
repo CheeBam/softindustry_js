@@ -1,0 +1,9 @@
+export const TYPE_WHOLESALE = 1;
+export const TYPE_RETAIL = 2;
+export const PER_PAGE = 5;
+export const DEBOUNCE_INTERVAL = 500;
+export const STATUS_PROCESS = 1;
+export const STATUS_CONFIRMED = 2;
+export const STATUS_DONE = 3;
+export const STATUS_EXPIRED = 4;
+export const STATUS_FAILED = 5;

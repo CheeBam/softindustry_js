@@ -1,0 +1,8 @@
+.git
+/.data
+/.idea
+/.vscode
+/.vagrant
+node_modules
+.DS_Store
+.env

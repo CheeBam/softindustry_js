@@ -1,0 +1,46 @@
+version: "3"
+
+services:
+
+### Proxy #####################################################
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy-3
+    ports:
+      - ${APP_PORT}:80
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+### Web #######################################################
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    volumes:
+      - ./web/src:/usr/src/app
+    environment:
+      - VIRTUAL_HOST=~.*
+
+### Api #######################################################
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    volumes:
+      - ./api/src:/usr/src/app
+    environment:
+      - VIRTUAL_HOST=api.*
+    depends_on:
+      - mysql
+
+### MySQL ####################################################
+  mysql:
+    build:
+      context: ./mysql
+    volumes:
+      - ./.data/mysql:/var/lib/mysql
+      - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - ${MYSQL_PORT}:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}

@@ -1,0 +1,15 @@
+export const ID = 'ID';
+export const SYS_ID = 'SYS_ID';
+export const CUSTOMER_ID = 'CUSTOMER_ID';
+export const PROVIDER = 'PROVIDER';
+export const POSITION = 'POSITION';
+export const TYPE = 'TYPE';
+export const DUE_DATE = 'DUE_DATE';
+export const COMMENT = 'COMMENT';
+export const CUSTOMER = 'CUSTOMER';
+export const CUSTOMER_EMAIL = 'CUSTOMER_EMAIL';
+export const CUSTOMER_NAME = 'CUSTOMER_NAME';
+export const CUSTOMER_SURNAME = 'CUSTOMER_SURNAME';
+export const CUSTOMER_PHONE = 'CUSTOMER_PHONE';
+export const ITEM = 'ITEM';
+export const CLEAR = 'CLEAR';
