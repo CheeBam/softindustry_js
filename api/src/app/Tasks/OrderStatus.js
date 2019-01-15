@@ -15,7 +15,7 @@ class OrderStatus extends Task {
         try {
             const rows = await Order
                 .query()
-                .where('deleted_at', null)
+                .whereNull('deleted_at')
                 .where('status_id', Constants.STATUS_CONFIRMED)
                 .where(Database.raw('due_date < NOW()'))
                 .update({status_id: Constants.STATUS_EXPIRED});

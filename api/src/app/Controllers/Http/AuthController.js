@@ -4,8 +4,8 @@ const User = use('App/Models/User');
 const {validate} = use('Validator');
 
 class AuthController {
-    async index() {
-        return await User.all();
+    index() {
+        return User.all();
     }
 
     async login({request, auth}) {

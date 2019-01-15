@@ -7,7 +7,6 @@ const OrderType = use('App/Models/OrderType');
 const Status = use('App/Models/Status');
 const Database = use('Database');
 const {DateTime} = require('luxon');
-const {validate} = use('Validator');
 const Constants = use('App/Helpers/Constants');
 const PaginationHelper = use('App/Helpers/PaginationHelper');
 
@@ -18,16 +17,7 @@ class OrderController {
      *
      * GET orders
      */
-    async index({auth, request, response}) {
-        const validation = await validate(request.all(), {
-            page: 'required',
-        });
-
-        if (validation.fails()) {
-            return response.status(422).json({
-                errors: validation.messages(),
-            });
-        }
+    async index({auth, request}) {
 
         // check if company is logged
         let logged = false;
@@ -89,8 +79,6 @@ class OrderController {
         orders.data = orders.data.map((el) => {
             const diff = DateTime.fromFormat(el.due_date, 'dd-MM-yyyy').diff(DateTime.local(), 'days').toObject();
             el.can_edit = Constants.ORDER_EDITING_DAYS_LIMIT < diff.days;
-
-            // el.can_edit = Math.random() % 2;
             el.metainfo = el.__meta__;
             delete el.__meta__;
             return el;
@@ -103,43 +91,8 @@ class OrderController {
      * Create/save a new order.
      * POST orders
      */
-    async store({request, response}) {
-
-        const validation = await validate(request.all(), {
-            sys_id: 'required',
-            customer: 'required',
-            order_type_id: 'required',
-            position_id: 'required',
-            due_date: 'required',
-        });
-
-        if (validation.fails()) {
-            return response.status(422).json({
-                errors: validation.messages(),
-            });
-        }
-
-        const position = await Position
-            .query()
-            .where('id', request.input('position_id'))
-            .first();
-
-        // let customer = await Customer
-        //     .query()
-        //     .where('email', request.input('customer.email')
-        //     .where('name', request.input('customer.name')
-        //     .where('surname', request.input('customer.surname')
-        //     .where('phone', request.input('customer.phone')
-        //     .first();
-        //
-        // if (!customer) {
-        //     customer = await Customer.create({
-        //         email: request.input('customer.email'),
-        //         name: request.input('customer.name'),
-        //         surname: request.input('customer.surname'),
-        //         phone: request.input('customer.phone'),
-        //     });
-        // }
+    async store({request}) {
+        const position = await Position.find(request.input('position_id'));
 
         const customer = await Customer
             .findOrCreate(
@@ -168,7 +121,7 @@ class OrderController {
             status_id: Constants.STATUS_PROCESS,
         });
 
-        return {};
+        return order;
     }
 
     /**
@@ -176,28 +129,10 @@ class OrderController {
      * PUT orders
      */
     async update({params, request, response}) {
-
-        const validation = await validate(request.all(), {
-            customer: 'required',
-            position_id: 'required',
-        });
-
-        if (validation.fails()) {
-            return response.status(422).json({
-                errors: validation.messages(),
-            });
-        }
-
-        const position = await Position
-            .query()
-            .where('id', request.input('position_id'))
-            .first();
+        const position = await Position.find(request.input('position_id'));
 
         // update order
-        const order = await Order
-            .query()
-            .where('id', params.id)
-            .first();
+        const order = await Order.find(params.id);
 
         // Simple check - may be replaced to middleware
         const diff = DateTime.fromJSDate(order.due_date).diff(DateTime.local(), 'days').toObject();
@@ -209,18 +144,17 @@ class OrderController {
 
         order.merge(
             {
+                due_date: order.due_date,
                 position_id: position.id,
                 user_id: position.user_id,
                 comment: request.input('comment'),
             }
         );
+        console.log(order);
         await order.save();
 
         // update order customer
-        const customer = await Customer
-            .query()
-            .where('id', order.customer_id)
-            .first();
+        const customer = await Customer.find(order.customer_id);
 
         customer.merge(
             {
@@ -233,7 +167,7 @@ class OrderController {
 
         await customer.save();
 
-        return {};
+        return order;
     }
 
     /**
@@ -242,11 +176,7 @@ class OrderController {
      */
     async changeStatus({request}) {
 
-        const order = await Order
-            .query()
-            .where('id', request.input('order_id'))
-            .first();
-
+        const order = await Order.find(request.input('order_id'));
         order.status_id = request.input('status_id');
         order.save();
 
@@ -276,17 +206,7 @@ class OrderController {
      * Download orders json.
      * POST orders/download
      */
-    async downloadJson({auth, request, response}) {
-
-        const validation = await validate(request.all(), {
-            file: 'required',
-        });
-
-        if (validation.fails()) {
-            return response.status(422).json({
-                errors: validation.messages(),
-            });
-        }
+    async downloadJson({request, response}) {
 
         let total = await Order
             .query()
@@ -300,25 +220,13 @@ class OrderController {
             const json = JSON.parse(JSON.stringify(eval(`(${request.input('file')})`)));
 
             const results = json.map(async (item) => {
-                const status = await Status
-                    .query()
-                    .where('title', item.status)
-                    .first();
-
+                const status = await Status.findBy('title', item.status);
                 if (!status) return;
 
-                const orderType = await OrderType
-                    .query()
-                    .where('title', item.type)
-                    .first();
-
+                const orderType = await OrderType.findBy('title', item.type);
                 if (!orderType) return;
 
-                const position = await Position
-                    .query()
-                    .where('title', item.position)
-                    .first();
-
+                const position = await Position.findBy('title', item.position);
                 if (!position) return;
 
                 const customer = await Customer

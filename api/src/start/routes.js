@@ -29,8 +29,12 @@ Route.group(() => {
     Route.resource('positions', 'PositionController').apiOnly();
 
     Route.patch('orders/status', 'OrderController.changeStatus');
-    Route.post('orders/download', 'OrderController.downloadJson');
-    Route.resource('orders', 'OrderController').apiOnly();
+    Route.post('orders/download', 'OrderController.downloadJson').validator('DownloadJsonOrder');
+    Route.resource('orders', 'OrderController').validator(new Map([
+        [['index'], ['GetOrders']],
+        [['store'], ['StoreOrder']],
+        [['update'], ['UpdateOrder']],
+    ])).apiOnly();
 })
     .prefix('api/v1');
 
