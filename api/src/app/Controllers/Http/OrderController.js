@@ -144,13 +144,11 @@ class OrderController {
 
         order.merge(
             {
-                due_date: order.due_date,
                 position_id: position.id,
                 user_id: position.user_id,
                 comment: request.input('comment'),
             }
         );
-        console.log(order);
         await order.save();
 
         // update order customer
