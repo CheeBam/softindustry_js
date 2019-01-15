@@ -69,5 +69,6 @@ export default {
         fileNotLoaded: 'File is not loaded',
         fileUploadedSuccessfully: 'File loaded successfully',
         company: 'Company',
+        updateOrder: 'Update order',
     },
 };

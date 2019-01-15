@@ -254,7 +254,7 @@
         ],
         metaInfo() {
             return {
-                title: this.$t('translation.createOrder'),
+                title: this.isEditPage ? this.$t('translation.updateOrder') : this.$t('translation.createOrder'),
             };
         },
         data() {
@@ -280,7 +280,7 @@
                 try {
                     this.progress = true;
                     await this.$store.dispatch('order/show', this.$route.params.id);
-                    this.getPositions(this.orderProvider);
+                    this.getPositions(this.orderProvider, true);
                     this.progress = false;
                 } catch (e) {
                     console.error(e);
@@ -345,7 +345,8 @@
                     }
                 }
             },
-            getPositions(provider) {
+            getPositions(provider, keep = false) {
+                if (!keep) this.orderPosition = null;
                 this.$store.dispatch('position/index', { user_id: provider.id});
             },
         },
